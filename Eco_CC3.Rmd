@@ -148,6 +148,22 @@ rownames(seqtabAll) <- gsub("124", "125", rownames(seqtabAll)) # Fix discrepancy
 all(rownames(seqtabAll) %in% samdf$SampleID)
 ```
 
+```{r}
+rownames(samdf) <- samdf$SampleID
+keep.cols <- c("collection_date", "biome", "target_gene", "target_subfragment",
+"host_common_name", "host_subject_id", "age", "sex", "body_product", "tot_mass",
+"diet", "family_relationship", "genotype", "SampleID") 
+samdf <- samdf[rownames(seqtabAll), keep.cols]
+```
+
+```{r}
+ps <- phyloseq(otu_table(seqtabNoC, taxa_are_rows=FALSE), 
+               sample_data(samdf), 
+               tax_table(taxTab),phy_tree(fitGTR$tree))
+ps <- prune_samples(sample_names(ps) != "Mock", ps)
+ps
+```
+
 ## Including Plots
 
 You can also embed plots, for example:
