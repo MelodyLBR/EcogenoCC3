@@ -157,16 +157,15 @@ samdf <- samdf[rownames(seqtabAll), keep.cols]
 ```
 
 ```{r}
+library(phyloseq)
 ps <- phyloseq(otu_table(seqtabNoC, taxa_are_rows=FALSE), 
                sample_data(samdf), 
                tax_table(taxTab),phy_tree(fitGTR$tree))
-ps <- prune_samples(sample_names(ps) != "Mock", ps)
+ps <- prune_samples(sample_names(ps) != "Mock", ps) # Remove mock sample
 ps
 ```
 
 ## Including Plots
-
-You can also embed plots, for example:
 
 ```{r}
 
