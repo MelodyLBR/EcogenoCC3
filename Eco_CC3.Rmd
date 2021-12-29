@@ -1,7 +1,15 @@
 ---
-title: "Eco_CC3"
-output: html_document
+title: "Analyse des données avec Dada2"
+author : Mélody Lebrun
+output: 
+date: "14 janvier 2021"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
 ---
+
+Les données choisi proviennent soit du contenue des intestins de 14 Abatus agassizii (oursin) ou des tissus intestinaux ou encore des sédiments à proximité des oursins échantillonnées. L'échantillonnage a été réalisé au niveau de 2 sites séparé par 2 km. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -156,6 +164,7 @@ keep.cols <- c("collection_date", "biome", "target_gene", "target_subfragment",
 samdf <- samdf[rownames(seqtabAll), keep.cols]
 ```
 
+# ici pb non réglé
 ```{r}
 library(phyloseq)
 ps <- phyloseq(otu_table(seqtabNoC, taxa_are_rows=FALSE), 
@@ -168,9 +177,65 @@ ps
 ## Utilisation de phyloseq
 
 ```{r}
-ps_connect <-url("https://raw.githubusercontent.com/spholmes/F1000_workflow/master/data/ps.rds")
-ps = readRDS(ps_connect)
-ps
+rank_names(ps) #rang de la base de donnée
+table(tax_table(ps)[, "Phylum"], exclude = NULL) # creation d'une table montrant les phylums avec une caractéristique observée
 ```
 
+```{r}
+ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized")) # supression des phylums non caractérisés
+```
+
+```{r}
+prevdf = apply(X = otu_table(ps),
+               MARGIN = ifelse(taxa_are_rows(ps), yes = 1, no = 2),
+               FUN = function(x){sum(x > 0)})
+
+prevdf = data.frame(Prevalence = prevdf,
+                    TotalAbundance = taxa_sums(ps),
+                    tax_table(ps))
+# prévalence des caractéristiques dans l'ensemble des données cad le nb de fois que le taxon apparait dans l'échantillon
+```
+
+```{r}
+plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+# calcule des prévalences totales et moyennes des caractéristiques dans chaque embranchement
+```
+
+```{r}
+filterPhyla = c("Fusobacteria", "Deinococcus-Thermus")
+# Filtrations "supervisées" des phylums dans la base de donnée de référence taxonomique
+ps1 = subset_taxa(ps, !Phylum %in% filterPhyla)
+ps1
+```
+
+# Filtration "non supervisées" reposant sur les données de l'article
+```{r}
+#lien entre la prévalence et le nombre total de lectures pour chaque caractéristique.
+
+prevdf1 = subset(prevdf, Phylum %in% get_taxa_unique(ps1, "Phylum"))
+ggplot(prevdf1, aes(TotalAbundance, Prevalence / nsamples(ps),color=Phylum)) +
+
+  geom_hline(yintercept = 0.05, alpha = 0.5, linetype = 2) +  geom_point(size = 2, alpha = 0.7) +
+  scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~Phylum) + theme(legend.position="none")
+```
+
+```{r}
+# Le seuil de prévalence est définie à 5% pour l'ensemble des échantillons
+prevalenceThreshold = 0.05 * nsamples(ps)
+prevalenceThreshold
+```
+
+```{r}
+keepTaxa = rownames(prevdf1)[(prevdf1$Prevalence >= prevalenceThreshold)]
+ps2 = prune_taxa(keepTaxa, ps)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
