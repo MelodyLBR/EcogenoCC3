@@ -29,7 +29,7 @@ library(dada2)
 set.seed(100)
 ```
 
-14 contenus intestinaux, 14 tissus intestinaux, 8 sédiments ARNr16S V4 et V5  
+14 contenus intestinaux, 14 tissus intestinaux, 8 sédiments ARNr16S V4 et V5 
 ```{r}
 miseq_path <- "./data_1"
 list.files(miseq_path)
