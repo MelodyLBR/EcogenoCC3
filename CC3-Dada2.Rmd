@@ -9,6 +9,8 @@ output:
     toc_depth: 2
 ---
 
+L'objectif de ce travail ...
+
 Les données choisi proviennent soit du contenue des intestins de 14 Abatus agassizii (oursin) ou des tissus intestinaux ou encore des sédiments à proximité des oursins échantillonnées. L'échantillonnage a été réalisé au niveau de 2 sites séparés par 2 km. Les échantillons ont été séquencé par illumina miseq. Le dossier data_1 contient l'ARNr16s de ces échantillons. 
 Le but de dada2 est de préparer les données pour les prochaines analyses en réparant les erreurs de séquençage. 
 
@@ -72,14 +74,15 @@ head(out)
 ```
 
 # Déduire des variantes de séquences (ASV)  
-# Combiner les lectures de séquençage en une séquence unique
+Combiner les lectures de séquençage en une séquence unique
+
 ```{r message = FALSE}
 derepFs <- derepFastq(filtFs, verbose=TRUE)
 derepRs <- derepFastq(filtRs, verbose=TRUE)
 names(derepFs) <- sampleNames
 names(derepRs) <- sampleNames
 ```
-#Connaître le taux d'erreur de séquençage 
+# Connaître le taux d'erreur de séquençage 
 
 ```{r}
 errF <- learnErrors(filtFs, multithread=TRUE)
@@ -121,11 +124,13 @@ seqtabAll <- makeSequenceTable(mergers[!grepl("Mock", names(mergers))])
 table(nchar(getSequences(seqtabAll)))
 ```
 
+Detection des chimères 
+
 ```{r}
 seqtabNoC <- removeBimeraDenovo(seqtabAll)
 ```
 
-## Attribuer une taxonomie
+# Attribuer une taxonomie
 ```{bash message = FALSE}
 cd ~
 wget  https://zenodo.org/record/4587955/files/silva_nr99_v138.1_train_set.fa.gz
@@ -135,6 +140,14 @@ wget  https://zenodo.org/record/4587955/files/silva_nr99_v138.1_train_set.fa.gz
 fastaRef <-"/home/rstudio/silva_nr99_v138.1_train_set.fa.gz"
 taxTab<-assignTaxonomy(seqtabNoC, refFasta=fastaRef, multithread=TRUE)
 unname(head(taxTab))
+taxa.print <- taxTab # Removing sequence rownames for display only
+rownames(taxa.print) <- NULL
+head(taxa.print)
+```
+
+# Sauvegarde de nos données ASV pour les prochaines analyses 
+```{r}
+save.image(file="02_Data-analysis-with-DADA2_FinalEnv")
 ```
 
 ## Construire un arbre phylogénétique 
