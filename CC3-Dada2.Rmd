@@ -35,8 +35,8 @@ miseq_path <- "./data_1"
 list.files(miseq_path)
 ```
 
-## Filtrer et rogner les lectures
-# Lire le nom des fichiers et les mettre dans l'ordre
+# Filtrer et rogner les lectures
+Lire le nom des fichiers et les mettre dans l'ordre
 
 ```{r}
 fnFs <- sort(list.files(miseq_path, pattern="_1.fastq"))
