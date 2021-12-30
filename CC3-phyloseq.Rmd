@@ -12,6 +12,10 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Préparation de l'environnement
+
+
+
 # Construire un arbre phylogénétique 
 
 ```{r}
