@@ -14,7 +14,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Préparation de l'environnement
 
+```{r}
+library(phyloseq)
+library(ggplot2)
+```
 
+```{r}
+load("02_Data-analysis-with-DADA2_FinalEnv")
+```
 
 # Construire un arbre phylogénétique 
 
