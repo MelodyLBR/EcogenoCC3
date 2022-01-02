@@ -66,6 +66,8 @@ rownames(Metadonnees) <- Metadonnees$Sample.Name
 keep.cols <- c("Run","env_medium","host_issue_sampled","lat_lon") 
 ```
 
+######## pb #########
+
 ```{r}
 Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
 ```
@@ -83,7 +85,7 @@ ContenuCH=(Metadonnees$host_tissue_sampled=="Gut content" | Metadonnees$lat_lon=
 ContenuA=(Metadonnees$host_tissue_sampled=="Gut content" | Metadonnees$lat_lon=="62.209556 S 58.92900 W")
 ```
 
-# ici pb non réglé
+##########pb##########
 ```{r}
 library(phyloseq)
 ps <- phyloseq(otu_table(seqtabNoC, taxa_are_rows=FALSE), 
@@ -150,10 +152,84 @@ keepTaxa = rownames(prevdf1)[(prevdf1$Prevalence >= prevalenceThreshold)]
 ps2 = prune_taxa(keepTaxa, ps)
 ```
 
-```{r}
+# Taxons agglomérés 
 
+```{r}
+length(get_taxa_unique(ps2, taxonomic.rank = "Genus"))
+ps3 = tax_glom(ps2, "Genus", NArm = TRUE)
+h1 = 0.4
+ps4 = tip_glom(ps2, h = h1)
 ```
 
 ```{r}
-
+multiPlotTitleTextSize = 15
+p2tree = plot_tree(ps2, method = "treeonly",
+                   ladderize = "left",
+                   title = "Before Agglomeration") +
+  theme(plot.title = element_text(size = multiPlotTitleTextSize))
+p3tree = plot_tree(ps3, method = "treeonly",
+                   ladderize = "left", title = "By Genus") +
+  theme(plot.title = element_text(size = multiPlotTitleTextSize))
+p4tree = plot_tree(ps4, method = "treeonly",
+                   ladderize = "left", title = "By Height") +
+  theme(plot.title = element_text(size = multiPlotTitleTextSize))
 ```
+
+# Transformation de la valeur de l'abondance 
+Transforme les données afin de tenir compte des différences de taille, de variance, d'échelle pour les abondances.
+
+```{r}
+plot_abundance = function(physeq,title = "",
+                          Facet = "Order", Color = "Phylum"){
+  # Arbitrary subset, based on Phylum, for plotting
+  p1f = subset_taxa(physeq, Phylum %in% c("Firmicutes"))
+  mphyseq = psmelt(p1f)
+  mphyseq <- subset(mphyseq, Abundance > 0)
+  ggplot(data = mphyseq, mapping = aes_string(x = "sex",y = "Abundance",
+                              color = Color, fill = Color)) +
+    geom_violin(fill = NA) +
+    geom_point(size = 1, alpha = 0.3,
+               position = position_jitter(width = 0.3)) +
+    facet_wrap(facets = Facet) + scale_y_log10()+
+    theme(legend.position="none")
+}
+```
+
+Abondance relative 
+```{r}
+ps3ra = transform_sample_counts(ps3, function(x){x / sum(x)})
+```
+
+Abondance avant et après transformation 
+```{r}
+plotBefore = plot_abundance(ps3,"")
+plotAfter = plot_abundance(ps3ra,"")
+grid.arrange(nrow = 2,  plotBefore, plotAfter)
+```
+
+# Analyse complémentaire 
+
+```{r}
+.cran_packages <- c( "shiny","miniUI", "caret", "pls", "e1071", "ggplot2", "randomForest", "dplyr", "ggrepel", "nlme", "devtools",
+                  "reshape2", "PMA", "structSSI", "ade4",
+                  "ggnetwork", "intergraph", "scales")
+.github_packages <- c("jfukuyama/phyloseqGraphTest")
+.bioc_packages <- c("genefilter", "impute")
+# Install CRAN packages (if not already installed)
+.inst <- .cran_packages %in% installed.packages()
+if (any(!.inst)){
+  install.packages(.cran_packages[!.inst],repos = "http://cran.rstudio.com/")
+}
+.inst <- .github_packages %in% installed.packages()
+if (any(!.inst)){
+  devtools::install_github(.github_packages[!.inst])
+}
+
+.inst <- .bioc_packages %in% installed.packages()
+if(any(!.inst)){
+  source("http://bioconductor.org/biocLite.R")
+  biocLite(.bioc_packages[!.inst])
+}
+```
+
+
