@@ -80,7 +80,10 @@ all(rownames(seqtabAll) %in% Metadonnees$Sample.Name) # TRUE
 ```{r}
 rownames(Metadonnees) <- Metadonnees$Sample.Name
 keep.cols <- c("Run","env_medium","host_issue_sampled","lat_lon") 
-`[.data.frame`(Metadonnees, rownames(seqtabAll), keep.cols)
+```
+
+```{r}
+Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
 ```
 
 # Création de plusieurs objects 
