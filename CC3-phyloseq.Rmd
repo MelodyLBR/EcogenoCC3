@@ -69,10 +69,18 @@ keep.cols <- c("Run", "Assay.type", "AvgSpotLen", "Bases",
 "Collection_Date", "Consent", "DATASTORE.provider", "DATASTORE.region", "env_broad_scale", "env_local_scale", "env_medium", "Experiment", "geo_loc_name_country", "geo_loc_name_country_continent", "geo_loc_name", "host_length", "Host", "host_taxid", "host_issue_sampled", "Instrument", "Isolation_source", "lat_lon", "Library.Name","LibraryLayout", "LibrarySelection", "LibrarySource", "Organism", "Platform", "ReleaseDate", "Sample.Name", "SRA.Study", "SampleID") 
 Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
 
+
+```{r}
+Metadonnees$Sample.Name <- paste0(gsub("00", "", Metadonnees$Sample.Name), "D")
+Metadonnees <- Metadonnees[!duplicated(Metadonnees$Sample.Name),] # Remove dupicate entries for reverse reads
+rownames(seqtabAll) <- gsub("124", "125", rownames(seqtabAll)) # Fix discrepancy
+all(rownames(seqtabAll) %in% Metadonnees$Sample.Name) # TRUE
+```
+
 ```{r}
 rownames(Metadonnees) <- Metadonnees$Sample.Name
-keep.cols <- c("Run","env_medium", "host_issue_sampled","lat_lon", "Sample.Name") 
-Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
+keep.cols <- c("Run","env_medium","host_issue_sampled","lat_lon") 
+`[.data.frame`(Metadonnees, rownames(seqtabAll), keep.cols)
 ```
 
 # Création de plusieurs objects 
