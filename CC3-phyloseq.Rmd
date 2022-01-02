@@ -55,21 +55,6 @@ detach("package:phangorn", unload=TRUE)
 Metadonnees<-read.csv(file="SraRunTable(2).txt")
 ```
 
-
-Je n'ai pas l'impression que ces lignes soient adapté à mes données
-samdf$SampleID <- paste0(gsub("00", "", samdf$host_subject_id), "D", samdf$age-21)
-samdf <- samdf[!duplicated(samdf$SampleID),] # Remove dupicate entries for reverse reads
-rownames(seqtabAll) <- gsub("124", "125", rownames(seqtabAll)) # Fix discrepancy
-all(rownames(seqtabAll) %in% samdf$SampleID) # TRUE
-
-
-rownames(Metadonnees) <- Metadonnees$SampleID
-keep.cols <- c("Run", "Assay.type", "AvgSpotLen", "Bases",
-"BioProject", "BioSample", "BioSample", "BioSampleModel", "Bytes", "Center.Name",
-"Collection_Date", "Consent", "DATASTORE.provider", "DATASTORE.region", "env_broad_scale", "env_local_scale", "env_medium", "Experiment", "geo_loc_name_country", "geo_loc_name_country_continent", "geo_loc_name", "host_length", "Host", "host_taxid", "host_issue_sampled", "Instrument", "Isolation_source", "lat_lon", "Library.Name","LibraryLayout", "LibrarySelection", "LibrarySource", "Organism", "Platform", "ReleaseDate", "Sample.Name", "SRA.Study", "SampleID") 
-Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
-
-
 ```{r}
 Metadonnees$Sample.Name <- paste0(gsub("00", "", Metadonnees$Sample.Name), "D")
 Metadonnees <- Metadonnees[!duplicated(Metadonnees$Sample.Name),] # Remove dupicate entries for reverse reads
