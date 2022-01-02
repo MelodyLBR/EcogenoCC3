@@ -17,13 +17,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(phyloseq)
 library(ggplot2)
+library(readr)
+
+```
+
+```{r}
+sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 ```
 
 ```{r}
 load("02_Data-analysis-with-DADA2_FinalEnv")
 ```
 
-# Construire un arbre phylogénétique 
+# Construire un arbre phylogénétique permettant de relié les variants de séquences
 
 ```{r}
 seqs <- getSequences(seqtabNoC)
@@ -42,22 +48,24 @@ fitGTR <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE,
 detach("package:phangorn", unload=TRUE)
 ```
 
-## Combiner des données dans un objet phyloseq
+#### PB a résoudre PS EXCEL #### 
+# Combiner des données dans un objet phyloseq
 
 ```{r}
-samdf <- read.csv("https://raw.githubusercontent.com/spholmes/F1000_workflow/master/data/MIMARKS_Data_combined.csv",header=TRUE)
-samdf$SampleID <- paste0(gsub("00", "", samdf$host_subject_id), "D", samdf$age-21)
-samdf <- samdf[!duplicated(samdf$SampleID),]
+Metadonnees<-read.csv(file="SraRunTable(2).txt")
+Metadonnees<-read.table("SraRunTable(2).txt", header=TRUE, sep=",")
+Metadonnees$SampleID <- paste0(gsub("00", "", Metadonnees$host_subject_id), "D", Metadonnees$age-21)
+Metadonnees <- Metadonnees[!duplicated(Metadonnees$SampleID),]
 rownames(seqtabAll) <- gsub("124", "125", rownames(seqtabAll)) # Fix discrepancy
-all(rownames(seqtabAll) %in% samdf$SampleID)
+all(rownames(seqtabAll) %in% Metadonnees$SampleID)
 ```
 
 ```{r}
-rownames(samdf) <- samdf$SampleID
+rownames(Metadonnees) <- Metadonnees$SampleID
 keep.cols <- c("collection_date", "biome", "target_gene", "target_subfragment",
 "host_common_name", "host_subject_id", "age", "sex", "body_product", "tot_mass",
 "diet", "family_relationship", "genotype", "SampleID") 
-samdf <- samdf[rownames(seqtabAll), keep.cols]
+Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
 ```
 
 # ici pb non réglé
