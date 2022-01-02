@@ -48,7 +48,6 @@ fitGTR <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE,
 detach("package:phangorn", unload=TRUE)
 ```
 
-#### PB a résoudre PS EXCEL #### 
 # Combiner des données dans un objet phyloseq
 
 ```{r}
