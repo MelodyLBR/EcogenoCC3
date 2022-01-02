@@ -53,26 +53,46 @@ detach("package:phangorn", unload=TRUE)
 
 ```{r}
 Metadonnees<-read.csv(file="SraRunTable(2).txt")
-Metadonnees<-read.table("SraRunTable(2).txt", header=TRUE, sep=",")
-Metadonnees$SampleID <- paste0(gsub("00", "", Metadonnees$host_subject_id), "D", Metadonnees$age-21)
-Metadonnees <- Metadonnees[!duplicated(Metadonnees$SampleID),]
-rownames(seqtabAll) <- gsub("124", "125", rownames(seqtabAll)) # Fix discrepancy
-all(rownames(seqtabAll) %in% Metadonnees$SampleID)
 ```
 
-```{r}
+
+Je n'ai pas l'impression que ces lignes soient adapté à mes données
+samdf$SampleID <- paste0(gsub("00", "", samdf$host_subject_id), "D", samdf$age-21)
+samdf <- samdf[!duplicated(samdf$SampleID),] # Remove dupicate entries for reverse reads
+rownames(seqtabAll) <- gsub("124", "125", rownames(seqtabAll)) # Fix discrepancy
+all(rownames(seqtabAll) %in% samdf$SampleID) # TRUE
+
+
 rownames(Metadonnees) <- Metadonnees$SampleID
 keep.cols <- c("Run", "Assay.type", "AvgSpotLen", "Bases",
 "BioProject", "BioSample", "BioSample", "BioSampleModel", "Bytes", "Center.Name",
-"Collection_Data", "Consent", "DATASTORE.provider", "DATASTORE.region", "env_broad_scale", "env_local_scale", "env_medium", "Experiment", "geo_loc_name_country", "geo_loc_name_country_continent", "geo_loc_name", "host_length", "Host", "host_taxid", "host_issue_sampled", "Instrument", "Isolation_source", "lat_lon", "Library.Name","LibraryLayout", "LibrarySelection", "LibrarySource", "Organism", "Plattform", "ReleaseDate", "Sample.Name", "SRA.Study", "SampleID") 
+"Collection_Date", "Consent", "DATASTORE.provider", "DATASTORE.region", "env_broad_scale", "env_local_scale", "env_medium", "Experiment", "geo_loc_name_country", "geo_loc_name_country_continent", "geo_loc_name", "host_length", "Host", "host_taxid", "host_issue_sampled", "Instrument", "Isolation_source", "lat_lon", "Library.Name","LibraryLayout", "LibrarySelection", "LibrarySource", "Organism", "Platform", "ReleaseDate", "Sample.Name", "SRA.Study", "SampleID") 
 Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
+
+```{r}
+rownames(Metadonnees) <- Metadonnees$Sample.Name
+keep.cols <- c("Run","env_medium", "host_issue_sampled","lat_lon", "Sample.Name") 
+Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
+```
+
+# Création de plusieurs objects 
+L'idée est de stratifier les données de tel sortes à simplifier le tableau et de séparer les types d'échantillon, entre tissu intestinal, contenu intestinal et sédiment et entre station. 
+
+```{r}
+
+SediCH=(Metadonnees$env_medium=="shallow marine sediment [ENVO:00000428]" | Metadonnees$lat_lon=="62.21879 S 58.95786 W")
+SediA=(Metadonnees$env_medium=="shallow marine sediment [ENVO:00000428]" | Metadonnees$lat_lon=="62.209556 S 58.92900 W")
+TissuCH=(Metadonnees$host_tissue_sampled=="Gut membrane" | Metadonnees$lat_lon=="62.21879 S 58.95786 W")
+TissuA=(Metadonnees$host_tissue_sampled=="Gut membrane" | Metadonnees$lat_lon=="62.209556 S 58.92900 W")
+ContenuCH=(Metadonnees$host_tissue_sampled=="Gut content" | Metadonnees$lat_lon=="62.21879 S 58.95786 W")
+ContenuA=(Metadonnees$host_tissue_sampled=="Gut content" | Metadonnees$lat_lon=="62.209556 S 58.92900 W")
 ```
 
 # ici pb non réglé
 ```{r}
 library(phyloseq)
 ps <- phyloseq(otu_table(seqtabNoC, taxa_are_rows=FALSE), 
-               sample_data(samdf), 
+               sample_data(Metadonnees), 
                tax_table(taxTab),phy_tree(fitGTR$tree))
 ps <- prune_samples(sample_names(ps) != "Mock", ps) # Remove mock sample
 ps
