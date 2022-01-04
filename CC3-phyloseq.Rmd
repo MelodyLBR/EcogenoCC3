@@ -18,10 +18,15 @@ knitr::opts_chunk$set(echo = TRUE)
 library(phyloseq)
 library(ggplot2)
 library(readr)
-
 ```
 
 ```{r}
+library("knitr")
+library("BiocStyle")
+.cran_packages <-c ("ggplot2", "gridExtra", "devtools")
+install.packages(.cran_packages) 
+.bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
+BiocManager::install(.bioc_packages)# Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 ```
 
@@ -68,9 +73,9 @@ keep.cols <- c("Run","env_medium","host_issue_sampled","lat_lon")
 
 ######## pb #########
 
-```{r}
+
 Metadonnees <- Metadonnees[rownames(seqtabAll), keep.cols]
-```
+
 
 # Création de plusieurs objects 
 L'idée est de stratifier les données de tel sortes à simplifier le tableau et de séparer les types d'échantillon, entre tissu intestinal, contenu intestinal et sédiment et entre station. 
@@ -86,14 +91,14 @@ ContenuA=(Metadonnees$host_tissue_sampled=="Gut content" | Metadonnees$lat_lon==
 ```
 
 ##########pb##########
-```{r}
+
 library(phyloseq)
 ps <- phyloseq(otu_table(seqtabNoC, taxa_are_rows=FALSE), 
                sample_data(Metadonnees), 
                tax_table(taxTab),phy_tree(fitGTR$tree))
 ps <- prune_samples(sample_names(ps) != "Mock", ps) # Remove mock sample
 ps
-```
+
 
 ## Utilisation de phyloseq
 
